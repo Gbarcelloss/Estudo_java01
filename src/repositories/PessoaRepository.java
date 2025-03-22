@@ -2,6 +2,8 @@ package repositories;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import entities.Pessoa;
@@ -28,23 +30,111 @@ public class PessoaRepository implements IRepository<Pessoa> {
 	@Override
 	public void update(Pessoa entity) throws Exception {
 
+		Connection connection = ConnectionFactory.getConnection();
+		
+		PreparedStatement statement = connection.prepareStatement("update pessoa set nome=?, email=? where idpessoa=?");
+		statement.setString(1, entity.getNome());
+		statement.setString(2, entity.getEmail());
+		statement.setInt(3, entity.getIdPessoa());
+		
+		statement.execute();
+		
+		connection.close();
+		
+		
+		
 	}
 
 	@Override
 	public void delete(Pessoa entity) throws Exception {
 
+		Connection connection = ConnectionFactory.getConnection();
+		
+		PreparedStatement statement = connection.prepareStatement("delete from pessoa where idpessoa=?");
+		statement.setInt(1, entity.getIdPessoa());
+		
 	}
 
 	@Override
 	public List<Pessoa> findAll() throws Exception {
 
-		return null;
+		Connection connection = ConnectionFactory.getConnection();
+		
+		PreparedStatement statement = connection.prepareStatement("select * from pessoa");
+		
+		ResultSet resultSet = statement.executeQuery();
+		
+		List<Pessoa> lista = new ArrayList<Pessoa>();
+		
+		while(resultSet.next()) {
+			
+			Pessoa pessoa = new Pessoa();
+			
+			pessoa.setIdPessoa(resultSet.getInt("idpessoa"));
+			pessoa.setNome(resultSet.getString("nome"));
+			pessoa.setEmail(resultSet.getString("Email"));
+			
+			lista.add(pessoa);
+		}
+		
+		connection.close();
+		return lista;
+		
 	}
 
+	public List<Pessoa> findByNome(String nome) throws Exception {
+		
+		Connection connection = ConnectionFactory.getConnection();
+		
+		PreparedStatement statement = connection.prepareStatement("select * from pessoa where nome like ? order by nome"); 
+		statement.setString(1,"%" + nome + "%");
+		ResultSet resultSet = statement.executeQuery();
+		
+		List<Pessoa> lista = new ArrayList<Pessoa>();
+		
+		while(resultSet.next()) {
+			
+			Pessoa pessoa = new Pessoa();
+			
+			pessoa.setIdPessoa(resultSet.getInt("idpessoa"));
+			pessoa.setNome(resultSet.getString("nome"));
+			pessoa.setEmail(resultSet.getString("email"));
+			
+			lista.add(pessoa);
+		}
+		
+		connection.close();
+		return lista;
+		
+	}	
+	
+	
 	@Override
 	public Pessoa findById(Integer id) throws Exception {
-
-		return null;
+		
+		
+		Connection connection = ConnectionFactory.getConnection();
+		
+		PreparedStatement statement = connection.prepareStatement("select * from pessoa where idpessoa=?");
+		statement.setInt(1, id);
+		ResultSet resultSet = statement.executeQuery();
+		
+		Pessoa pessoa = null;
+		
+		if(resultSet.next()) {
+			
+			pessoa = new Pessoa();
+			
+			pessoa.setIdPessoa(resultSet.getInt("idpessoa"));
+			pessoa.setNome(resultSet.getString("nome"));
+			pessoa.setEmail(resultSet.getString("email"));
+			
+		}
+		
+		connection.close();
+		return pessoa;
+		
+	
 	}
 
 }
